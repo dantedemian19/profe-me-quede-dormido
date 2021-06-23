@@ -231,8 +231,8 @@ void menu3() { // menu para el ejercicio de los empleados
         while (!menuv.enter) {
             cls();//cursor appears only in selected option 
             cout << menuv.name << "  ";
-            if (menuv.w == 1) { cout << ">>"; } cout << " ingresar empleado \n" << "  ";
-            if (menuv.w == 2) { cout << ">>"; } cout << " ver empleados \n" << "  ";
+            if (menuv.w == 1) { cout << ">>"; } cout << " ingresar nodo \n" << "  ";
+            if (menuv.w == 2) { cout << ">>"; } cout << " contar nodos \n" << "  ";
             if (menuv.w == menuv.exit) { cout << ">>"; } cout << " salida \n";
             //detection of the cursor
             menuv.detection();
@@ -304,42 +304,53 @@ void menu4() { // menu para el ejercicio de los empleados
     }
 };
 void menu() { // menu
-    //advice();
-    string name = " programa de ejercicios de hashing \n";
-    int w = 1;
-    const int exit = 3;
-    bool enter = false;
-    cls();
-    while (w != exit) { // its a easy menu
-        enter = false;
-        while (!enter) {
-            cls();//cursor appears only in selected option 
-            cout << name << "  ";
-            if (w == 1) { cout << ">>"; } cout << " ejercicio 1 \n" << "  ";
-            if (w == 2) { cout << ">>"; } cout << " ejercicio 2 \n" << "  ";
-            if (w == exit) { cout << ">>"; } cout << " salida \n";
-            //detection of the cursor
-            detection(w, enter, exit);
-            //detection of the cursor
-        }
+        menuVars menuv;
+        menuv.name = " programa de ejercicios de hashing \n";
+        const int menuexit = 3;
+        menuv.exit = menuexit;
+        menuv.program = 3;
         cls();
-        switch (w) {
-        case 1:
-            menu3();
-            pause();
-            break;
-        case 2:
-            menu4();
-            pause();
-            break;
-        case exit:
-            //exit message
-            break;
-        default:
-            errormens();
-            break;
+        while (menuv.w != menuv.exit) { // its a easy menu
+            menuv.enter = false;
+            while (!menuv.enter) {
+                cls();//cursor appears only in selected option 
+                cout << menuv.name << "  ";
+                if (menuv.w == 1) { cout << ">>"; } cout << " ejercicio 1 \n" << "  ";
+                if (menuv.w == 2) { cout << ">>"; } cout << " ejercicio 2 (not working) \n" << "  ";
+                if (menuv.w == 2) { cout << ">>"; } cout << " ejercicio 3 \n" << "  ";
+                if (menuv.w == 2) { cout << ">>"; } cout << " ejercicio 4 \n" << "  ";
+                if (menuv.w == menuv.exit) { cout << ">>"; } cout << " salida \n";
+                //detection of the cursor
+                menuv.detection();
+                //detection of the cursor
+            }
+            cls();
+            switch (menuv.w) {
+            case 1:
+                
+                pause();
+                break;
+            case 2:
+                
+                pause();
+                break;
+            case 3:
+                menu3();
+                pause();
+                break;
+            case 4:
+                menu4();
+                pause();
+                break;
+            case menuexit:
+                //exit message
+                break;
+            default:
+                errormens();
+                break;
+            }
         }
-    }
+    };
 };
 int main()
 {
