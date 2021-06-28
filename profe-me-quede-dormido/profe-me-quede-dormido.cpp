@@ -10,9 +10,7 @@
 #define entr 13
 #define esc 27
 #define back 8
-
-// variables
-// 
+ 
 // namespaces
 
 using std::ios;
@@ -22,23 +20,29 @@ using std::cin;
 using std::fstream;
 
 // fin namespaces
-
+//
+// classes
 class tree{
-    typedef tree* node;
+    typedef tree* node;// definicion del puntero para obejtos tree
 public:
     int num = 0;//valor del nodo
+    string cha = "";
     bool isroot = false;
     bool isparent = false;
     bool isleaf = true;
+    bool isnode = false;
     tree* upinthetree = nullptr;// valor del nodo de arriba 
     tree* left = nullptr;// apunta al nodo de la izquierda
     tree* right = nullptr;// apunta al nodo de la derecha
+    int sright = 0, sleft = 0; // apunta al nodo siguiente, para el ejercicio estatico
     node search(node root, int& dir);
     void add2tree(node& selected);
-    void showtree();
+    void showtreeinorder(int mode);
+    void showtreepostorder(int mode);
+    void showtreepreorder(int mode);
 
 };
-typedef tree* node;
+typedef tree* node;// definicion del puntero para obejos tree
 
 class menuVars {
 public:
@@ -49,17 +53,13 @@ public:
     string namef = "";
     void detection();
 };
-
 class count {
 public:
     int parentnodes = 0, leafnodes = 0;// cantidad de nodoshoja y nodos rama que hay
 };
-
-
-// fin variables
+// end classes
 //
 // funciones globales
-
 void wait() {// hace esperar al usuario 2 segundos
     cout << "loading \n";
     Sleep(2000);
@@ -116,7 +116,9 @@ void menuVars::detection() { // mueve el cursor dependiendo la decision del usua
         enter = !enter;
     }
 };
-
+// end of class menuVars methods
+//
+// class tree methods
 node tree::search(node cursor, int& dir) { // verifica segun propiedad (num) en que lugar va en el arbol
     node z = cursor;// cursor
     if (z != nullptr) {
@@ -137,39 +139,78 @@ node tree::search(node cursor, int& dir) { // verifica segun propiedad (num) en 
             }
         }
     }
+    else dir = 0;
+    return z;
 };
-void tree::add2tree(node& selected) { //ingresa un valor nuevo al la lista
-    //ingreso de un nodo nuevo a la lista
-    if (num == 0) {// si es root
-        num = selected->num;
-        isroot = true;
-    }
-    else {// si no es root
-        int dir = 0;// si va a la izquierda o derecha
-        node z = selected->search(this, dir);
-        z->isleaf = false;
-        z->isparent = true;
+void tree::add2tree(node& selected) { //ingresa un valor nuevo al arbol desde root
+    int dir = 0;// si va a la izquierda o derecha
+    node z = selected->search(this, dir);
+    if (isroot){
         selected->upinthetree = z;
         switch (dir)
         {
-        case 2:
+        case 2: // si va a la derecha
             z->right = selected;
+            z->isparent = true;
+            z->isleaf = false;
             break;
 
-        case 1:
+        case 1: // si va a la izquierda
             z->left = selected;
+            z->isparent = true;
+            z->isleaf = false;
             break;
 
-        default:
+        default:// si hay error
             cout << "\n error dos nodos son iguales \n";
             free(selected);
             break;
         }
+    }else  z->isroot = true;
+};
+void tree::showtreepreorder(int mode) {// devuelve los nodos de menor a mayor apartir de la raiz
+    if (this != nullptr) {
+        if (mode == 0 || mode == 1)cout << num << " ";// el nodo (this)
+        if (mode == 0 || mode == 2)cout << cha << " ";// el nodo (this)
+        if (left != nullptr) {
+            left->showtreepreorder(mode);// la izquierda del arbol
+        }
+        if (right != nullptr) {
+            right->showtreepreorder(mode);// la derecha del nodo
+        }
     }
-
+};
+void tree::showtreeinorder(int mode) {// devuelve los nodos de menor a mayor apartir de la raiz
+    if (this != nullptr) {
+        if (left != nullptr) {
+            left->showtreeinorder(mode);// la izquierda del arbol
+        }
+        if (mode == 0 || mode == 1)cout << num << " ";// el nodo (this)
+        if (mode == 0 || mode == 2)cout << cha << " ";// el nodo (this)
+        if (right != nullptr) {
+            right->showtreeinorder(mode);// la derecha del nodo
+        }
+    }
+};
+void tree::showtreepostorder(int mode) {// devuelve los nodos de menor a mayor apartir de la raiz
+    if (this != nullptr) {
+        if (left != nullptr) {
+            left->showtreepostorder(mode);// la izquierda del arbol
+        }
+        if (right != nullptr) {
+            right->showtreepostorder(mode);// la derecha del nodo
+        }
+        if (mode == 0 || mode == 1)cout << num << " ";// el nodo (this)
+        if (mode == 0 || mode == 2)cout << cha << " ";// el nodo (this)
+    }
 };
 
-void read(menuVars menuv, node& root) {// lee un archivo .txt y lo ingresa en memoria dinamica
+// end of class tree methods
+//
+// funciones globales
+void read(menuVars menuv, node& root, int mode) {// lee un archivo .txt y lo ingresa en memoria dinamica
+    // mode 0, reads only numbers
+    // mode 1, read numbers and a string
     fstream file;// sirve para abrir el archivo
     node z = nullptr;
     file.open(menuv.namef, ios::in);// intenta abrir el archivo .txt
@@ -182,56 +223,214 @@ void read(menuVars menuv, node& root) {// lee un archivo .txt y lo ingresa en me
         while (!file.eof()) {// mientras que el archivo no este en el final
             z = new(tree);
             file >> z->num;// lee los datos del archivo
-            root->add2tree(z);// ingresa los valores al arbol
+            if (mode == 1) file >> z->cha;
+            if (root == nullptr) { // si es la root
+                root = z;
+                root->isroot = true;
+            }
+            else root->add2tree(z);// si no es la root
         }
     }
     file.close();// cierra el archivo
 };
-
 void contadorpedorro(node root, count& contador) {// devuelve el numero de nodos que hay    
     if (root !=nullptr) {
         if (root->isleaf) { 
-            contador.leafnodes += 1; 
+            contador.leafnodes += 1; // si hay un nodo leaf
         }
         if (root->isparent) { 
-            contador.parentnodes += 1; 
+            contador.parentnodes += 1; // si hay un nodo parent
         }
-        if(root->left) contadorpedorro(root->left, contador);
-        if(root->right) contadorpedorro(root->right, contador);
+        /*cout << "\t" << root->num << " " << root->isleaf << " " << root->isparent << " "; // debug, muestra los nodos con datos sobre si es leaf, si es parent,
+        if (root->isparent) {                                                               // y datos sobre el nodos hijos
+            if (root->left != nullptr) {
+                cout << "left: " << root->left->num << " ";
+            }
+            if (root->right != nullptr) {
+                cout << "right: " << root->right->num << " ";
+            }
+        }
+        cout << "\n";*/
+        if(root->left != nullptr) contadorpedorro(root->left, contador);// si tiene nodos hijos, repite la funcion con el nodo siguiente
+        if(root->right != nullptr) contadorpedorro(root->right, contador);// si tiene nodos hijos, repite la funcion con el nodo siguiente
     }
     else {
         // por ahora nada
     }
-
 };
-
-void tree::showtree() {// devuelve los nodos de menor a mayor
-    if (this != nullptr) {
-        if (left != nullptr) {
-            left->showtree();
-        }
-        cout <<num<<" ";
-        if (right != nullptr) {
-            right->showtree();
-        }
-    }
-
-};
-void addvalue(node& root) {
-    node z = nullptr;
-    if (root == nullptr){
-        root = new(tree);
-        z = root;
-    }
-    else {
-        z = new(tree);
-    }
+void addvalue(node& root) { // aniade un nodo nuevo
+    node z = new(tree);
     cout << "\t ingresar valor del nodo: ";
     cin >> z->num;
     root->add2tree(z);
 };
-// funciones globales
+int sadd2tree(tree root[], tree selected, int i, int dad, int& dir) {// busca el lugar del nodo en el arbol static
+    if (root[i].num > selected.num) {
+        if (root[i].sleft != 0) i = sadd2tree(root, selected, (root[i].sleft), i, dir);// si va para la izquierda
+        else dir = 1;
+            return i;
+        
+    }
+    if (root[i].num < selected.num) {
+        if (root[i].sright != 0) i = sadd2tree(root, selected, (root[i].sright), i, dir); // si va para la derecha
+        else dir = 2;
+            return i;
+    }
+    return dad;// si va en este nodo
+};
+void loopaddvalue(tree root[], tree selected, int i, int j, int& dir) {
+    if(root[i].num != selected.num)
+    if (root[i + j].isnode == false && dir > 0) {// si el lugar en el vector esta disponible
+        root[i + j] = selected;
+        root[i + j].isnode = true;// ocupa el nodo
+        //cout << root[i+j].num << " " << i << " ";
+        root[i].isparent = true;
+        root[i].isleaf = false;
+        if (dir == 1) { 
+            root[i].sleft = i + j; // si va a la izquierda
+            //cout << root[i].sleft<<"\n";
+        }
+        if (dir == 2) { 
+            root[i].sright = i + j; // si va a la derecha
+            //cout << root[i].sright << "\n";
+        }
+    }
+    else if(dir>0 && j+1 < 9999) loopaddvalue(root, selected, i, j+1, dir);// si el nodo esta ocupado repite la funcion con el siguiente espacio
+        else  exit;
+};
+void addvaluestatic(tree root[], tree selected) {// funcion para agregar un nodo selected, al arbol static
+    int i = 0, dir = 0;
+        i = sadd2tree(root, selected, 0, 0, dir);
+        loopaddvalue(root, selected, i, 1, dir);
+};
+void staticcontadorpedorro(tree root[], count& contador,int i) {// devuelve el numero de nodos que hay en el arbol static
+    if (root[i].isnode != false ) { // si el nodo es parte del arbol
+        if (root[i].isleaf) {
+            contador.leafnodes += 1;// si el nodo es leaf
+        }
+        if (root[i].isparent) {
+            contador.parentnodes += 1;// si el nodo es parent
+        }
+        
+        if (root[root[i].sleft].isnode != false) staticcontadorpedorro(root, contador, (root[i].sleft));// si el nodo tiene nodos hijos
+        if (root[root[i].sright].isnode != false) staticcontadorpedorro(root, contador, (root[i].sright));// repite la funcion
+    }
+    else {
+        // por ahora nada
+    }
+};
+void readstatic(menuVars menuv, tree root[]) {// lee un archivo .txt y lo ingresa en memoria dinamica
+    fstream file;// sirve para abrir el archivo
+    tree add;
+    file.open(menuv.namef, ios::in);// intenta abrir el archivo .txt
+    if (file.fail()) {// si el archivo falla al abrir
+        cout << "error abriendo el archivo " << menuv.namef << "\n";
+        pause();
+    }
+    else {
 
+        while (!file.eof()) {// mientras que el archivo no este en el final
+            file >> add.num;// lee los datos del archivo
+            if (root[0].isroot == false) { // si es la root
+                root[0] = add;
+                root[0].isnode = true;
+                root[0].isroot = true;
+            }
+            else addvaluestatic(root,add);// si es un nodo hoja
+        }
+        pause();
+    }
+    file.close();// cierra el archivo
+};
+void showstatictree(tree root[], int i) {// devuelve los nodos de menor a mayor no funciona
+    if (root[i].isnode) {
+        if (!root[root[i].sleft].isroot) {
+            showstatictree(root, (root[i].sleft));
+        }
+        cout << " " << root[i].num << " ";
+        if (!root[root[i].sright].isroot) {
+            showstatictree(root, (root[i].sright));
+        }
+    }
+};
+// end funciones globales
+//
+// menus
+void menu1() {
+    menuVars menuv;
+    menuv.name = "\tejercicio 1 \n";
+    cout << menuv.name;
+    cout << "\t a) a + b \n";
+    cout << "\t b) log x \n";
+    cout << "\t c) n ! \n";
+    cout << "\t d) a - b * c \n";
+    cout << "\t e) a < b o c < d\n";
+    pause();
+};
+void menu2() {
+    menuVars menuv;
+    node root[4] = { nullptr,nullptr,nullptr,nullptr };
+    string names[4] = {"a","b","c","d"};
+    menuv.name = "\tejercicio 2 \n"; \
+    const int menuexit = 4;
+    menuv.exit = menuexit;
+    menuv.program = 2;
+    for (int i = 0; i < 4; i += 1) {
+        menuv.namef = names[i];
+        menuv.namef += ".txt";
+        read(menuv, root[i],1);
+    }
+    cls();
+    while (menuv.w != menuv.exit) { // its a easy menu
+        menuv.enter = false;
+        while (!menuv.enter) {
+            cls();//cursor appears only in selected option 
+            cout << menuv.name << "  ";
+            if (menuv.w == 1) { cout << ">>"; } cout << " ver arboles en preorder \n" << "  ";
+            if (menuv.w == 2) { cout << ">>"; } cout << " ver arboles en order \n" << "  ";
+            if (menuv.w == 3) { cout << ">>"; } cout << " ver arboles en postorder \n" << "  ";
+            if (menuv.w == menuv.exit) { cout << ">>"; } cout << " salida \n";
+            //detection of the cursor
+            menuv.detection();
+            //detection of the cursor
+        }
+        cls();
+        switch (menuv.w) {
+        case 1:
+            cout << "\t en preorder: \n";
+            for (int i = 0; i < 4; i += 1) {
+                cout << "\t"<<names[i]<<")\t";
+                root[i]->showtreepreorder(2);
+                cout << "\n";
+            }
+            pause();
+            break;
+        case 2:
+            cout << "\t en inorder: \n";
+            for (int i = 0; i < 4; i += 1) {
+                cout << "\t" << names[i] << ")\t";
+                root[i]->showtreeinorder(2);
+                cout << "\n";
+            }
+            pause();
+            break;
+        case 3:
+            for (int i = 0; i < 4; i += 1) {
+                cout << "\t" << names[i] << ")\t";
+                root[i]->showtreepostorder(2);
+                cout << "\n";
+            }
+            pause();
+            break;
+        case menuexit:
+            //exit message
+            break;
+        default:
+            errormens();
+            break;
+        }
+    }
+};
 void menu3() { // menu para el ejercicio de los empleados
     //advice();
     menuVars menuv;
@@ -239,13 +438,13 @@ void menu3() { // menu para el ejercicio de los empleados
     const int menuexit = 4;
     menuv.exit = menuexit;
     menuv.program = 3;
-    node root = new(tree);
+    node root = nullptr;
     count contador;
     cls();
     cout << "   ingresar el nombre del archivo (sin el .txt): ";
     cin >> menuv.namef;
     menuv.namef += ".txt";
-    read(menuv, root);
+    read(menuv, root,0);
     cls();
     while (menuv.w != menuv.exit) { // its a easy menu
         menuv.enter = false;
@@ -254,7 +453,7 @@ void menu3() { // menu para el ejercicio de los empleados
             cout << menuv.name << "  ";
             if (menuv.w == 1) { cout << ">>"; } cout << " ingresar nodo \n" << "  ";
             if (menuv.w == 2) { cout << ">>"; } cout << " contar nodos \n" << "  ";
-            if (menuv.w == 3) { cout << ">>"; } cout << " ver el arbol (debug) \n" << "  ";
+            if (menuv.w == 3) { cout << ">>"; } cout << " ver el arbol (debug, los muestra en lista, de menor a mayor) \n" << "  ";
             if (menuv.w == menuv.exit) { cout << ">>"; } cout << " salida \n";
             //detection of the cursor
             menuv.detection();
@@ -264,7 +463,6 @@ void menu3() { // menu para el ejercicio de los empleados
         switch (menuv.w) {
         case 1:
             addvalue(root);
-            pause();
             break;
         case 2:
             contador.parentnodes = 0;
@@ -275,7 +473,7 @@ void menu3() { // menu para el ejercicio de los empleados
             pause();
             break;
         case 3:
-            root->showtree();
+            root->showtreeinorder(0);
             pause();
             break;
         case menuexit:
@@ -288,28 +486,30 @@ void menu3() { // menu para el ejercicio de los empleados
         }
     }
 };
-void menu4() { // menu para el ejercicio de los empleados
+void menu4() { // menu para el ejercicio 4
     //advice();
     menuVars menuv;
     menuv.name = " ejercicio 4 \n";
-    const int menuexit = 3;
+    const int menuexit = 4;
     menuv.exit = menuexit;
     menuv.program = 3;
-    node root = nullptr;
+    tree root[9999];
+    tree selected;
     count contador;
     cls();
     cout << "   ingresar el nombre del archivo (sin el .txt): ";
     cin >> menuv.namef;
     menuv.namef += ".txt";
-    read(menuv, root);
+    readstatic(menuv, root);
     cls();
     while (menuv.w != menuv.exit) { // its a easy menu
         menuv.enter = false;
         while (!menuv.enter) {
             cls();//cursor appears only in selected option 
             cout << menuv.name << "  ";
-            if (menuv.w == 1) { cout << ">>"; } cout << " ingresar empleado \n" << "  ";
-            if (menuv.w == 2) { cout << ">>"; } cout << " ver empleados \n" << "  ";
+            if (menuv.w == 1) { cout << ">>"; } cout << " ingresar nodo \n" << "  ";
+            if (menuv.w == 2) { cout << ">>"; } cout << " contar nodos \n" << "  ";
+            if (menuv.w == 3) { cout << ">>"; } cout << " ver el arbol de menor a mayor (debug) \n" << "  ";
             if (menuv.w == menuv.exit) { cout << ">>"; } cout << " salida \n";
             //detection of the cursor
             menuv.detection();
@@ -318,12 +518,26 @@ void menu4() { // menu para el ejercicio de los empleados
         cls();
         switch (menuv.w) {
         case 1:
-            addvalue(root);
-            pause();
+            cout << "\t ingresar valor del nodo: ";
+            cin >> selected.num;
+            if (root[0].isnode != false && root[0].isroot == false) {
+                    root[0] = selected;
+                    root[0].isnode = true;
+                    root[0].isroot = true;
+            }else addvaluestatic(root,selected);
             break;
         case 2:
-            contadorpedorro(root, contador);
+            contador.parentnodes = 0;
+            contador.leafnodes = contador.parentnodes;
+            staticcontadorpedorro(root, contador,0);
+            cout << "\t cantidad de nodos parent: " << contador.parentnodes << " \n";
+            cout << "\t cantidad de nodos leaf: " << contador.leafnodes << " \n";
             pause();
+            break;
+        case 3:
+            showstatictree(root,0);
+            pause();
+            //exit message
             break;
         case menuexit:
             //exit message
@@ -346,8 +560,8 @@ void menu() { // menu
         while (!menuv.enter) {
             cls();//cursor appears only in selected option 
             cout << menuv.name << "  ";
-            if (menuv.w == 1) { cout << ">>"; } cout << " ejercicio 1 (not working)\n" << "  ";
-            if (menuv.w == 2) { cout << ">>"; } cout << " ejercicio 2 (not working) \n" << "  ";
+            if (menuv.w == 1) { cout << ">>"; } cout << " ejercicio 1 \n" << "  ";
+            if (menuv.w == 2) { cout << ">>"; } cout << " ejercicio 2 \n" << "  ";
             if (menuv.w == 3) { cout << ">>"; } cout << " ejercicio 3 \n" << "  ";
             if (menuv.w == 4) { cout << ">>"; } cout << " ejercicio 4 \n" << "  ";
             if (menuv.w == menuv.exit) { cout << ">>"; } cout << " salida \n";
@@ -358,20 +572,16 @@ void menu() { // menu
         cls();
         switch (menuv.w) {
         case 1:
-
-            pause();
+            menu1();
             break;
         case 2:
-
-            pause();
+            menu2();
             break;
         case 3:
             menu3();
-            pause();
             break;
         case 4:
             menu4();
-            pause();
             break;
         case menuexit:
             //exit message
@@ -382,7 +592,7 @@ void menu() { // menu
         }
     }
 };
-
+// end of menus
 int main()
 {
     menu();
