@@ -40,7 +40,6 @@ public:
     void showtreeinorder(int mode);
     void showtreepostorder(int mode);
     void showtreepreorder(int mode);
-
 };
 typedef tree* node;// definicion del puntero para obejos tree
 
@@ -60,16 +59,20 @@ public:
 // end classes
 //
 // funciones globales
+void pause() {
+    int cha = 0;
+    cout << "\t pulse a enter to continue";
+    while (cha != entr) {
+        cha = _getch();
+    }
+};
+void cls() {
+    cout << "\033c";
+};
 void wait() {// hace esperar al usuario 2 segundos
     cout << "loading \n";
     Sleep(2000);
-    system("cls");
-};
-void pause() {
-    system("pause");
-};
-void cls() {
-    system("cls");
+    cls();
 };
 void advice() {
     //advice for users
@@ -168,7 +171,7 @@ void tree::add2tree(node& selected) { //ingresa un valor nuevo al arbol desde ro
         }
     }else  z->isroot = true;
 };
-void tree::showtreepreorder(int mode) {// devuelve los nodos de menor a mayor apartir de la raiz
+void tree::showtreepreorder(int mode) {// devuelve los nodos
     if (this != nullptr) {
         if (mode == 0 || mode == 1)cout << num << " ";// el nodo (this)
         if (mode == 0 || mode == 2)cout << cha << " ";// el nodo (this)
@@ -192,7 +195,7 @@ void tree::showtreeinorder(int mode) {// devuelve los nodos de menor a mayor apa
         }
     }
 };
-void tree::showtreepostorder(int mode) {// devuelve los nodos de menor a mayor apartir de la raiz
+void tree::showtreepostorder(int mode) {// devuelve los nodos
     if (this != nullptr) {
         if (left != nullptr) {
             left->showtreepostorder(mode);// la izquierda del arbol
@@ -204,7 +207,6 @@ void tree::showtreepostorder(int mode) {// devuelve los nodos de menor a mayor a
         if (mode == 0 || mode == 2)cout << cha << " ";// el nodo (this)
     }
 };
-
 // end of class tree methods
 //
 // funciones globales
