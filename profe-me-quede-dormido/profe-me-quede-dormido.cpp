@@ -34,7 +34,7 @@ public:
     tree* upinthetree = nullptr;// valor del nodo de arriba 
     tree* left = nullptr;// apunta al nodo de la izquierda
     tree* right = nullptr;// apunta al nodo de la derecha
-    int sright = 0, sleft = 0; // apunta al nodo siguiente, para el ejercicio estatico
+    int sright = 0, sleft = 0; // apunta a los nodos hijos, para el ejercicio estatico
     node search(node root, int& dir);
     void add2tree(node& selected);
     void showtreeinorder(int mode);
